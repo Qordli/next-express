@@ -13,6 +13,7 @@ import { binaryVersion as tsImplCompilerVer } from "../src/ts-impl-cli-ver";
 import { parse as parseToml, TomlTable } from "smol-toml";
 import { question } from "./question-cli";
 import pkgJson from "../package.json";
+import { RELEASE_TAG_NAME } from "../src/post-install/release-tag-name";
 
 logger.prefix = "build-script";
 
@@ -205,6 +206,9 @@ async function main() {
   logger.info(`- Main cli (version: ${pkgJson.version})`);
   logger.info(`  - Compiler cli typescript (version: ${tsImplCompilerVer})`);
   logger.info(`  - Compiler cli rust (version: ${rustImplCompilerVer})`);
+  logger.info(
+    `  - Post-install script will search tag name "${RELEASE_TAG_NAME}"`,
+  );
 
   logger.info("This log is to remind you to bump the version if needed.");
   const answer = await question("Do you want to continue? (y/n)");

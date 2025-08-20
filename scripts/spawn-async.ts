@@ -8,6 +8,8 @@ export function spawnAsync(
   opt?: SpawnOptionsWithoutStdio,
 ) {
   return new Promise<number>((resolve, reject) => {
+    logger.debug(`[${prefix}] Spawning command: ${command} ${args.join(" ")}`);
+
     const child = spawn(command, args, {
       stdio: "pipe",
       shell: true,

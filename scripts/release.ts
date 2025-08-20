@@ -12,8 +12,8 @@ logger.prefix = "release-script";
 function makeNotes(ver: string) {
   return (
     `[ next-express ${ver} release ]` +
-    "\nThis release is for npm post-install." +
-    "\nOnly include the src code and rust-impl compiler pre-build binaries." +
+    "\nThis release is for npm postinstall scripts." +
+    "\nOnly include the rust-impl compiler pre-build binaries." +
     "\nPlease install next-express following the documentation."
   );
 }

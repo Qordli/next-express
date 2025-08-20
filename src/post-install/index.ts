@@ -1,9 +1,9 @@
 import { logger } from "../env-logger";
-import pkgJson from "../../package.json";
 import path from "path";
 import { fileURLToPath } from "node:url";
 import { downloadWithRedirects } from "./post-install-downloader";
 import { chmodSync, statSync } from "node:fs";
+import { RELEASE_TAG_NAME } from "./release-tag-name";
 
 let DIR_NAME: string;
 try {
@@ -14,7 +14,6 @@ try {
 }
 
 logger.prefix = "next-express-postinstall";
-const tagName = `v${pkgJson.version}`;
 
 function getBinaryName() {
   if (process.platform === "darwin") {
@@ -44,13 +43,14 @@ async function main() {
     );
     return;
   }
-  const targetUrl = makeGithubReleaseUrl(tagName, binaryName);
+  const targetUrl = makeGithubReleaseUrl(RELEASE_TAG_NAME, binaryName);
 
   const executableName = "nexp-compiler-rs";
   const splited = binaryName.split(executableName);
   // this path must match the path in `src/build.ts > findCompilerExecutable()` call
   const executablePath = path.resolve(
     DIR_NAME,
+    "..",
     "bin",
     splited[1].slice(1),
     executableName,
