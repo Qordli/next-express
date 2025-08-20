@@ -1,0 +1,5 @@
+node_modules/
+dist/
+tests/__snapshots__/
+bin/lipo
+rust-dist/

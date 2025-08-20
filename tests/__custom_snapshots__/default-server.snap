@@ -1,0 +1,97 @@
+import express from "express";
+import { settings as appSettings } from "../__test_src__/settings";
+import { middlewares as topLevelMiddlewares } from "../__test_src__/middlewares";
+import { middlewares as tailMiddlewares } from "../__test_src__/tail-middlewares";
+import { GET as app_GET } from "../__test_src__/app/route";
+import { POST as app_POST } from "../__test_src__/app/route";
+import { GET as app_health_GET } from "../__test_src__/app/health/route";
+import { middlewares as userMiddlewares } from "../__test_src__/app/user/middlewares";
+import { GET as app_user_GET } from "../__test_src__/app/user/route";
+import { POST as app_user_auth_signin_POST } from "../__test_src__/app/user/(auth)/signin/route";
+import { POST as app_user_auth_signup_POST } from "../__test_src__/app/user/(auth)/signup/route";
+import { GET as app_user_home_avatar_GET } from "../__test_src__/app/user/(home)/avatar/route";
+import { GET as app_user_home_me_GET } from "../__test_src__/app/user/(home)/me/route";
+
+export const createServer = () => {
+  const app = express();
+
+  for (const setting of appSettings) {
+    app.set(setting.name, setting.value);
+  }
+
+  app.use(...topLevelMiddlewares);
+
+  // ===== routes [app | app] =====
+  app.all("/", async (req, res) => {
+    if (req.method === "GET") {
+      app_GET(req, res);
+      return;
+    }
+    if (req.method === "POST") {
+      await app_POST(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [health | app/health] =====
+  app.all("/health/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_health_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [user | app/user] =====
+  const userRouter = express.Router();
+  app.use("/user", userRouter);
+  userRouter.use(...userMiddlewares);
+  userRouter.all("/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_user_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [signin | app/user/(auth)/signin] =====
+  userRouter.all("/signin/", async (req, res) => {
+    if (req.method === "POST") {
+      app_user_auth_signin_POST(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [signup | app/user/(auth)/signup] =====
+  userRouter.all("/signup/", async (req, res) => {
+    if (req.method === "POST") {
+      app_user_auth_signup_POST(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [avatar | app/user/(home)/avatar] =====
+  userRouter.all("/avatar/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_user_home_avatar_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [me | app/user/(home)/me] =====
+  userRouter.all("/me/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_user_home_me_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  app.use(...tailMiddlewares);
+
+  return app;
+};
