@@ -5,6 +5,8 @@ import pkgJson from "../package.json";
 import { compileServer, generateEntryFile } from "./build";
 import { build, Options as TsupOptions } from "tsup";
 import { watchBuild } from "./tsup-watch";
+import path from "node:path";
+import { readFileSync } from "node:fs";
 
 const binaryName = pkgJson.name;
 logger.prefix = binaryName;
@@ -76,10 +78,18 @@ class DevCommand extends BaseCommand {
   async execute() {
     const startTime = performance.now();
 
+    const userPkgJsonPath = path.resolve("package.json");
+    const userPkgJson = JSON.parse(readFileSync(userPkgJsonPath, "utf-8"));
+    const pkgType = userPkgJson.type as string | undefined;
+    let entryFileExt = ".js";
+    if (pkgType !== "module") {
+      entryFileExt = ".mjs";
+    }
+
     watchBuild({
       beforeBuild: () => this.beforeBuild(),
       watchPaths: this.watch,
-      onSuccessCall: "node .next-express/index.js",
+      onSuccessCall: `node .next-express/index${entryFileExt}`,
       ...tsupConfig({
         compilerDistDir: this.distDir,
       }),

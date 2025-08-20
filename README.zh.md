@@ -21,6 +21,14 @@ pnpm add express
 
 ## 基本概念与目录约定
 
+运行 next-express 构建出来的代码你需要以下环境
+- node.js >= 22
+- express (next-express 导出 express 为 peerDependencies, 你需要自己安装)
+
+开发模式下解析 next-express 提供的工具函数你需要进行以下设置
+- tsconfig 的 module 为 node16 及以上
+- package.json 的 type 设置为 module
+
 ```
 nexp-compiled/
 	server.ts               # (编译产物) createServer 实现 (默认编译输出)

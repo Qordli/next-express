@@ -21,10 +21,9 @@ Express server entry so you can quickly get:
 # Or use any package manager you like
 pnpm add -D next-express ts-morph tsup chokidar
 pnpm add express
-## Core Concepts & Directory Conventions
 ```
 
-## Convention
+## Core Concepts & Convention
 
 ```
 nexp-compiled/
