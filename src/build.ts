@@ -43,8 +43,10 @@ export function findCompilerExecutable() {
 const ENTRY_TEMPLATE = `import { createServer } from "/* __nextExpress_serverFileName__ */";
 
 const server = createServer();
-server.listen(/* __nextExpress_port__ */, () => {
-  console.log("Server is listening on port", /* __nextExpress_port__ */);
+const httpServer = server.listen(/* __nextExpress_port__ */);
+httpServer.on("listening", () => {
+  const addr = httpServer.address();
+  console.log("Server is listening on address:", JSON.stringify(addr));
 });
 `;
 export function generateEntryFile(

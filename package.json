@@ -1,7 +1,7 @@
 {
   "name": "@qordli/next-express",
   "private": false,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "description": "A file-based routing compiler for express, inspired by Next.js.",
   "author": "ZEHUA YANG <march772827981@gmail.com>",
