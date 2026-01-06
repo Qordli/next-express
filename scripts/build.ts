@@ -178,7 +178,12 @@ async function lipo_macos_universal() {
   logger.info("Lipo macOS universal DONE");
 }
 
-async function buildRustImpl() {
+async function buildRustImpl(skipBuildRustImpl: boolean) {
+  if (skipBuildRustImpl) {
+    logger.info("Skipping Rust implementation build as requested.");
+    return;
+  }
+
   logger.info("Building Rust implementation...");
 
   await build_rust_x86_64_unknown_linux_gnu();
@@ -199,6 +204,14 @@ async function buildTypescript() {
 }
 
 async function main() {
+  let skipBuildRustImpl = false;
+  if (
+    process.env.SKIP_BUILD_RUST_IMPL === "1" ||
+    process.env.SKIP_BUILD_RUST_IMPL === "true"
+  ) {
+    skipBuildRustImpl = true;
+  }
+
   const cargoTomlPath = path.resolve("src-rust", "Cargo.toml");
   const cargoTomlContent = parseToml(readFileSync(cargoTomlPath, "utf-8"));
   const rustImplCompilerVer = (cargoTomlContent.package as TomlTable).version;
@@ -220,7 +233,10 @@ async function main() {
   logger.info("Build starting...");
   const startTime = performance.now();
 
-  const distDirs = ["dist", "rust-dist"];
+  const distDirs = ["dist"];
+  if (!skipBuildRustImpl) {
+    distDirs.push("rust-dist");
+  }
   distDirs.forEach((dir) => {
     const dirPath = path.resolve(dir);
     if (!existsSync(dirPath)) {
@@ -231,7 +247,7 @@ async function main() {
   });
   logger.info("Dist dirs cleaned up.");
 
-  await buildRustImpl();
+  await buildRustImpl(skipBuildRustImpl);
   await buildTypescript();
 
   logger.info(`Build done in ${performance.now() - startTime}ms`);

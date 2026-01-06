@@ -1,3 +1,10 @@
+/**
+ * Script to create a GitHub release and attach pre-built binaries.
+ *
+ * Usage:
+ *   run `pnpm release` in project root.
+ */
+
 import { Cli, Command, Option } from "clipanion";
 import { existsSync } from "fs";
 import path from "path";

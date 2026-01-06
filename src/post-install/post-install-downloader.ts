@@ -5,7 +5,7 @@ import path from "node:path";
 import { IncomingMessage } from "node:http";
 import { createWriteStream, existsSync, mkdirSync } from "node:fs";
 
-function human(n) {
+function human(n: number) {
   if (!Number.isFinite(n)) return "未知";
   const units = ["B", "KB", "MB", "GB"];
   let i = 0;
