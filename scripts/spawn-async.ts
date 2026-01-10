@@ -9,10 +9,14 @@ export function spawnAsync(
 ) {
   return new Promise<number>((resolve, reject) => {
     logger.debug(`[${prefix}] Spawning command: ${command} ${args.join(" ")}`);
+    let shell = false;
+    if (process.platform === "win32") {
+      shell = true;
+    }
 
     const child = spawn(command, args, {
       stdio: "pipe",
-      shell: true,
+      shell,
       ...opt,
     });
 

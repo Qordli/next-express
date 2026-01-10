@@ -488,7 +488,21 @@ fn compile_route(
 
     if let Some(_middlewares) = &app_route.middlewares {
         log::debug!("Setting up middleware router for: {}", app_route.name);
-        let group_route_path = format!("/{}", app_route.name);
+        // Calculate the full path from app root by converting relative_path to endpoint
+        // e.g., "app/manage/admin" -> "/manage/admin"
+        let full_router_path = format!(
+            "/{}",
+            app_route
+                .relative_path
+                .strip_prefix("app/")
+                .unwrap_or(&app_route.relative_path)
+        );
+        // If there's a parent sub-router, we need to make this path relative to it
+        let group_route_path = if let Some(sub_router) = nearest_sub_router {
+            full_router_path.replace(&sub_router.path, "")
+        } else {
+            full_router_path.clone()
+        };
         let route_identifier = route_name_to_identifier(&app_route.name)?;
         let route_middlewares_alias = format!("{}Middlewares", route_identifier);
 
@@ -507,10 +521,15 @@ fn compile_route(
         ));
 
         let group_router_identifier = format!("{}Router", route_identifier);
+        // Store the full path from app root for child routes to use
         app_route.sub_router = Some(SubRouter {
             identifier: group_router_identifier.clone(),
-            path: group_route_path.clone(),
+            path: full_router_path,
         });
+        // Use the parent router if available, otherwise use app
+        let parent_router = nearest_sub_router
+            .map(|s| s.identifier.as_str())
+            .unwrap_or("app");
         current_nearest_sub_router = app_route.sub_router.as_ref();
 
         routes.push_str(&format!(
@@ -518,8 +537,8 @@ fn compile_route(
             group_router_identifier
         ));
         routes.push_str(&format!(
-            "app.use(\"{}\", {});\n",
-            group_route_path, group_router_identifier
+            "{}.use(\"{}\", {});\n",
+            parent_router, group_route_path, group_router_identifier
         ));
         routes.push_str(&format!(
             "{}.use(...{});\n",

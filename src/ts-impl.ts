@@ -382,21 +382,31 @@ function compileRoute(
   routes += `// ===== routes [${appRoute.name} | ${appRoute.relativePath}] =====\n`;
   if (appRoute.middlewares) {
     logger.debug(`Setting up middleware router for: ${appRoute.name}`);
-    const groupRoutePath = `/${appRoute.name}`;
+    // Calculate the full path from app root by converting relativePath to endpoint
+    // e.g., "app/manage/admin" -> "/manage/admin"
+    let groupRoutePath = "/" + appRoute.relativePath.replace(/^app\/?/, "");
+    // If there's a parent sub-router, we need to make this path relative to it
+    if (nearestSubRouter) {
+      groupRoutePath = groupRoutePath.replace(nearestSubRouter.path, "");
+    }
     const routeIdentifier = routeNameToIdentifier(appRoute.name);
     const routeMiddlewaresAlias = `${routeIdentifier}Middlewares`;
     imports += `import { ${Convention.middlewaresExportName} as ${routeMiddlewaresAlias} } from "${distToSrcRelPath}/${appRoute.relativePath}/${appRoute.middlewares.replace(".ts", "").replace(".js", "")}";\n`;
     const groupRouterIdentifier = `${routeIdentifier}Router`;
+    // Store the full path from app root for child routes to use
+    const fullRouterPath = "/" + appRoute.relativePath.replace(/^app\/?/, "");
     appRoute.subRouter = {
       identifier: groupRouterIdentifier,
-      path: groupRoutePath,
+      path: fullRouterPath,
     };
+    // Use the parent router if available, otherwise use app
+    const parentRouter = nearestSubRouter ? nearestSubRouter.identifier : "app";
     nearestSubRouter = {
       identifier: groupRouterIdentifier,
-      path: groupRoutePath,
+      path: fullRouterPath,
     };
     routes += `const ${groupRouterIdentifier} = express.Router();\n`;
-    routes += `app.use("${groupRoutePath}", ${groupRouterIdentifier});\n`;
+    routes += `${parentRouter}.use("${groupRoutePath}", ${groupRouterIdentifier});\n`;
     routes += `${groupRouterIdentifier}.use(...${routeMiddlewaresAlias});\n`;
   }
 
@@ -465,10 +475,11 @@ function transformAppRoutes(appRoute: AppRoute, parent?: AppRoute): AppRoute {
 }
 
 function findNearestSubRouter(appRoute: AppRoute): SubRouter | undefined {
-  if (appRoute.middlewares) {
-    return appRoute.subRouter;
-  }
+  // First check the parent, since the current route's subRouter might not be set yet
   if (appRoute.parent) {
+    if (appRoute.parent.subRouter) {
+      return appRoute.parent.subRouter;
+    }
     return findNearestSubRouter(appRoute.parent);
   }
   return undefined;

@@ -5,12 +5,23 @@ import { middlewares as tailMiddlewares } from "../__test_src__/tail-middlewares
 import { GET as app_GET } from "../__test_src__/app/route";
 import { POST as app_POST } from "../__test_src__/app/route";
 import { GET as app_health_GET } from "../__test_src__/app/health/route";
-import { middlewares as userMiddlewares } from "../__test_src__/app/user/middlewares";
+import { middlewares as adminMiddlewares } from "../__test_src__/app/manage/admin/middlewares";
+import { GET as app_manage_admin_site_config_GET } from "../__test_src__/app/manage/admin/site-config/route";
+import { middlewares as coreMiddlewares } from "../__test_src__/app/manage/admin/site-config/core/middlewares";
+import { GET as app_manage_admin_site_config_core_core_config_GET } from "../__test_src__/app/manage/admin/site-config/core/core-config/route";
+import { GET as app_manage_admin_site_config_core_core_config_2_GET } from "../__test_src__/app/manage/admin/site-config/core/core-config-2/route";
+import { middlewares as super_coreMiddlewares } from "../__test_src__/app/manage/admin/site-config/core/super-core/middlewares";
+import { GET as app_manage_admin_site_config_core_super_core_super_core_config_GET } from "../__test_src__/app/manage/admin/site-config/core/super-core/super-core-config/route";
+import { GET as app_manage_admin_site_config_normal_config_GET } from "../__test_src__/app/manage/admin/site-config/normal-config/route";
+import { GET as app_manage_admin_site_config_normal_config_2_GET } from "../__test_src__/app/manage/admin/site-config/normal-config-2/route";
+import { GET as app_manage_admin_whitelist_GET } from "../__test_src__/app/manage/admin/whitelist/route";
+import { GET as app_manage_public_user_public_GET } from "../__test_src__/app/manage/public/user-public/route";
 import { GET as app_user_GET } from "../__test_src__/app/user/route";
 import { POST as app_user_auth_signin_POST } from "../__test_src__/app/user/(auth)/signin/route";
 import { POST as app_user_auth_signup_POST } from "../__test_src__/app/user/(auth)/signup/route";
-import { GET as app_user_home_avatar_GET } from "../__test_src__/app/user/(home)/avatar/route";
-import { GET as app_user_home_me_GET } from "../__test_src__/app/user/(home)/me/route";
+import { middlewares as homeMiddlewares } from "../__test_src__/app/user/home/middlewares";
+import { GET as app_user_home_avatar_GET } from "../__test_src__/app/user/home/avatar/route";
+import { GET as app_user_home_me_GET } from "../__test_src__/app/user/home/me/route";
 
 export const createServer = () => {
   const app = express();
@@ -43,11 +54,98 @@ export const createServer = () => {
     res.status(405).send(`Method ${req.method} Not Allowed`);
   });
 
+  // ===== routes [admin | app/manage/admin] =====
+  const adminRouter = express.Router();
+  app.use("/manage/admin", adminRouter);
+  adminRouter.use(...adminMiddlewares);
+
+  // ===== routes [site-config | app/manage/admin/site-config] =====
+  adminRouter.all("/site-config/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_manage_admin_site_config_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [core | app/manage/admin/site-config/core] =====
+  const coreRouter = express.Router();
+  adminRouter.use("/site-config/core", coreRouter);
+  coreRouter.use(...coreMiddlewares);
+
+  // ===== routes [core-config | app/manage/admin/site-config/core/core-config] =====
+  coreRouter.all("/core-config/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_manage_admin_site_config_core_core_config_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [core-config-2 | app/manage/admin/site-config/core/core-config-2] =====
+  coreRouter.all("/core-config-2/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_manage_admin_site_config_core_core_config_2_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [super-core | app/manage/admin/site-config/core/super-core] =====
+  const super_coreRouter = express.Router();
+  coreRouter.use("/super-core", super_coreRouter);
+  super_coreRouter.use(...super_coreMiddlewares);
+
+  // ===== routes [super-core-config | app/manage/admin/site-config/core/super-core/super-core-config] =====
+  super_coreRouter.all("/super-core-config/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_manage_admin_site_config_core_super_core_super_core_config_GET(
+        req,
+        res,
+      );
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [normal-config | app/manage/admin/site-config/normal-config] =====
+  adminRouter.all("/site-config/normal-config/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_manage_admin_site_config_normal_config_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [normal-config-2 | app/manage/admin/site-config/normal-config-2] =====
+  adminRouter.all("/site-config/normal-config-2/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_manage_admin_site_config_normal_config_2_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [whitelist | app/manage/admin/whitelist] =====
+  adminRouter.all("/whitelist/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_manage_admin_whitelist_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [user-public | app/manage/public/user-public] =====
+  app.all("/manage/public/user-public/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_manage_public_user_public_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
   // ===== routes [user | app/user] =====
-  const userRouter = express.Router();
-  app.use("/user", userRouter);
-  userRouter.use(...userMiddlewares);
-  userRouter.all("/", async (req, res) => {
+  app.all("/user/", async (req, res) => {
     if (req.method === "GET") {
       await app_user_GET(req, res);
       return;
@@ -56,7 +154,7 @@ export const createServer = () => {
   });
 
   // ===== routes [signin | app/user/(auth)/signin] =====
-  userRouter.all("/signin/", async (req, res) => {
+  app.all("/user/signin/", async (req, res) => {
     if (req.method === "POST") {
       app_user_auth_signin_POST(req, res);
       return;
@@ -65,7 +163,7 @@ export const createServer = () => {
   });
 
   // ===== routes [signup | app/user/(auth)/signup] =====
-  userRouter.all("/signup/", async (req, res) => {
+  app.all("/user/signup/", async (req, res) => {
     if (req.method === "POST") {
       app_user_auth_signup_POST(req, res);
       return;
@@ -73,8 +171,13 @@ export const createServer = () => {
     res.status(405).send(`Method ${req.method} Not Allowed`);
   });
 
-  // ===== routes [avatar | app/user/(home)/avatar] =====
-  userRouter.all("/avatar/", async (req, res) => {
+  // ===== routes [home | app/user/home] =====
+  const homeRouter = express.Router();
+  app.use("/user/home", homeRouter);
+  homeRouter.use(...homeMiddlewares);
+
+  // ===== routes [avatar | app/user/home/avatar] =====
+  homeRouter.all("/avatar/", async (req, res) => {
     if (req.method === "GET") {
       await app_user_home_avatar_GET(req, res);
       return;
@@ -82,8 +185,8 @@ export const createServer = () => {
     res.status(405).send(`Method ${req.method} Not Allowed`);
   });
 
-  // ===== routes [me | app/user/(home)/me] =====
-  userRouter.all("/me/", async (req, res) => {
+  // ===== routes [me | app/user/home/me] =====
+  homeRouter.all("/me/", async (req, res) => {
     if (req.method === "GET") {
       await app_user_home_me_GET(req, res);
       return;
