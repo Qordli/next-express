@@ -1,1 +1,1 @@
-export const binaryVersion = "0.1.5";
+export const binaryVersion = "0.1.7";

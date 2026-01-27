@@ -5,4 +5,7 @@ Bump peer dependencies version and fix node16+ import error.
 Export listen addr error now.
 
 # 0.1.6
-Fix nested dir-level middlewares routing bug
+Fix nested dir-level middlewares routing bug.
+
+# 0.1.7
+Add dynamic route support.

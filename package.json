@@ -1,7 +1,7 @@
 {
   "name": "@qordli/next-express",
   "private": false,
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "module",
   "description": "A file-based routing compiler for express, inspired by Next.js.",
   "author": "ZEHUA YANG <march772827981@gmail.com>",
@@ -31,7 +31,7 @@
   },
   "scripts": {
     "postinstall": "node dist/post-install/index.js",
-    "dev": "tsx src/index.ts",
+    "dev": "tsx src/bin.ts",
     "snapshots:update": "tsx tests/scripts/update-custom-snapshot.ts",
     "test": "vitest",
     "build": "tsx scripts/build.ts",

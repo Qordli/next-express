@@ -98,6 +98,10 @@ function routeNameToIdentifier(name: string): string {
   if (name.startsWith("(") && name.endsWith(")")) {
     throw new Error("Virtual group should not be used as a route name");
   }
+  // Handle dynamic route parameters [param] -> param
+  if (name.startsWith("[") && name.endsWith("]")) {
+    name = name.slice(1, -1);
+  }
   return name;
 }
 
@@ -107,7 +111,32 @@ function uniqueRouteHandlerAlias(appRoute: AppRoute) {
     .replaceAll(".", "_")
     .replaceAll("-", "_")
     .replaceAll("(", "")
-    .replaceAll(")", "");
+    .replaceAll(")", "")
+    .replaceAll("[", "")
+    .replaceAll("]", "");
+}
+
+function getRouteDisplayName(name: string): string {
+  // Convert [param] to :param for display in comments
+  if (name.startsWith("[") && name.endsWith("]")) {
+    const paramName = name.slice(1, -1);
+    return `:${paramName}`;
+  }
+  return name;
+}
+
+function getRouteDisplayPath(relativePath: string): string {
+  // Convert path segments [param] to :param for display in comments
+  return relativePath
+    .split("/")
+    .map((segment) => {
+      if (segment.startsWith("[") && segment.endsWith("]")) {
+        const paramName = segment.slice(1, -1);
+        return `:${paramName}`;
+      }
+      return segment;
+    })
+    .join("/");
 }
 
 function findAppRouteRecursive(
@@ -295,6 +324,10 @@ function relPathToEndpoint(relPath: string): string {
     }
     if (segment === "route.ts") {
       endpoint += "/";
+    } else if (segment.startsWith("[") && segment.endsWith("]")) {
+      // Convert [param] to :param for Express dynamic routes
+      const paramName = segment.slice(1, -1);
+      endpoint += `/:${paramName}`;
     } else {
       endpoint += `/${segment}`;
     }
@@ -379,7 +412,9 @@ function compileRoute(
 ) {
   logger.debug(`Compiling route: ${appRoute.name} at ${appRoute.relativePath}`);
 
-  routes += `// ===== routes [${appRoute.name} | ${appRoute.relativePath}] =====\n`;
+  const displayName = getRouteDisplayName(appRoute.name);
+  const displayPath = getRouteDisplayPath(appRoute.relativePath);
+  routes += `// ===== routes [${displayName} | ${displayPath}] =====\n`;
   if (appRoute.middlewares) {
     logger.debug(`Setting up middleware router for: ${appRoute.name}`);
     // Calculate the full path from app root by converting relativePath to endpoint

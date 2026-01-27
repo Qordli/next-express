@@ -16,6 +16,8 @@ import { GET as app_manage_admin_site_config_normal_config_GET } from "../__test
 import { GET as app_manage_admin_site_config_normal_config_2_GET } from "../__test_src__/app/manage/admin/site-config/normal-config-2/route";
 import { GET as app_manage_admin_whitelist_GET } from "../__test_src__/app/manage/admin/whitelist/route";
 import { GET as app_manage_public_user_public_GET } from "../__test_src__/app/manage/public/user-public/route";
+import { GET as app_todos_GET } from "../__test_src__/app/todos/route";
+import { GET as app_todos_id_GET } from "../__test_src__/app/todos/[id]/route";
 import { GET as app_user_GET } from "../__test_src__/app/user/route";
 import { POST as app_user_auth_signin_POST } from "../__test_src__/app/user/(auth)/signin/route";
 import { POST as app_user_auth_signup_POST } from "../__test_src__/app/user/(auth)/signup/route";
@@ -139,6 +141,24 @@ export const createServer = () => {
   app.all("/manage/public/user-public/", async (req, res) => {
     if (req.method === "GET") {
       await app_manage_public_user_public_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [todos | app/todos] =====
+  app.all("/todos/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_todos_GET(req, res);
+      return;
+    }
+    res.status(405).send(`Method ${req.method} Not Allowed`);
+  });
+
+  // ===== routes [:id | app/todos/:id] =====
+  app.all("/todos/:id/", async (req, res) => {
+    if (req.method === "GET") {
+      await app_todos_id_GET(req, res);
       return;
     }
     res.status(405).send(`Method ${req.method} Not Allowed`);

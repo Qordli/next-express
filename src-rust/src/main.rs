@@ -204,9 +204,13 @@ impl Visit for ExportVisitor {
 }
 
 fn route_name_to_identifier(name: &str) -> Result<String> {
-    let name = name.trim().replace('-', "_");
+    let mut name = name.trim().replace('-', "_");
     if name.starts_with('(') && name.ends_with(')') {
         anyhow::bail!("Virtual group should not be used as a route name");
+    }
+    // Handle dynamic route parameters [param] -> param
+    if name.starts_with('[') && name.ends_with(']') {
+        name = name[1..name.len() - 1].to_string();
     }
     Ok(name)
 }
@@ -219,6 +223,33 @@ fn unique_route_handler_alias(app_route: &AppRoute) -> String {
         .replace('-', "_")
         .replace('(', "")
         .replace(')', "")
+        .replace('[', "")
+        .replace(']', "")
+}
+
+fn get_route_display_name(name: &str) -> String {
+    // Convert [param] to :param for display in comments
+    if name.starts_with('[') && name.ends_with(']') {
+        let param_name = &name[1..name.len() - 1];
+        return format!(":{}", param_name);
+    }
+    name.to_string()
+}
+
+fn get_route_display_path(relative_path: &str) -> String {
+    // Convert path segments [param] to :param for display in comments
+    relative_path
+        .split('/')
+        .map(|segment| {
+            if segment.starts_with('[') && segment.ends_with(']') {
+                let param_name = &segment[1..segment.len() - 1];
+                format!(":{}", param_name)
+            } else {
+                segment.to_string()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("/")
 }
 
 fn find_app_route_recursive_mut<'a>(
@@ -415,6 +446,11 @@ fn rel_path_to_endpoint(rel_path: &str) -> Result<String> {
         }
         if segment == "route.ts" {
             endpoint.push('/');
+        } else if segment.starts_with('[') && segment.ends_with(']') {
+            // Convert [param] to :param for Express dynamic routes
+            let param_name = &segment[1..segment.len() - 1];
+            endpoint.push_str("/:");
+            endpoint.push_str(param_name);
         } else {
             endpoint.push('/');
             endpoint.push_str(segment);
@@ -479,9 +515,11 @@ fn compile_route(
         app_route.relative_path
     );
 
+    let display_name = get_route_display_name(&app_route.name);
+    let display_path = get_route_display_path(&app_route.relative_path);
     routes.push_str(&format!(
         "// ===== routes [{} | {}] =====\n",
-        app_route.name, app_route.relative_path
+        display_name, display_path
     ));
 
     let mut current_nearest_sub_router = nearest_sub_router;

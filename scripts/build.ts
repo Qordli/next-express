@@ -1,19 +1,10 @@
 import { logger } from "../src/env-logger";
 import path from "path";
 import { platform, arch } from "os";
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  rmdirSync,
-} from "fs";
+import { copyFileSync, existsSync, mkdirSync, rmSync } from "fs";
 import { spawnAsync } from "./spawn-async";
-import { binaryVersion as tsImplCompilerVer } from "../src/ts-impl-cli-ver";
-import { parse as parseToml, TomlTable } from "smol-toml";
 import { question } from "./question-cli";
-import pkgJson from "../package.json";
-import { RELEASE_TAG_NAME } from "../src/post-install/release-tag-name";
+import { getVersions } from "./versions";
 
 logger.prefix = "build-script";
 
@@ -57,7 +48,7 @@ async function build_rust_x86_64_unknown_linux_gnu() {
 
 async function build_rust_x86_64_pc_windows_gnu() {
   let cmdName: string;
-  if (platform() === "linux" && arch() === "x64") {
+  if (platform() === "win32" && arch() === "x64") {
     cmdName = "cargo";
   } else {
     cmdName = "cross";
@@ -212,15 +203,15 @@ async function main() {
     skipBuildRustImpl = true;
   }
 
-  const cargoTomlPath = path.resolve("src-rust", "Cargo.toml");
-  const cargoTomlContent = parseToml(readFileSync(cargoTomlPath, "utf-8"));
-  const rustImplCompilerVer = (cargoTomlContent.package as TomlTable).version;
+  const versions = await getVersions();
   logger.info(`Will build following targets:`);
-  logger.info(`- Main cli (version: ${pkgJson.version})`);
-  logger.info(`  - Compiler cli typescript (version: ${tsImplCompilerVer})`);
-  logger.info(`  - Compiler cli rust (version: ${rustImplCompilerVer})`);
+  logger.info(`- Main cli (version: ${versions.mainCli})`);
   logger.info(
-    `  - Post-install script will search tag name "${RELEASE_TAG_NAME}"`,
+    `  - Compiler cli typescript (version: ${versions.compilerTypescript})`,
+  );
+  logger.info(`  - Compiler cli rust (version: ${versions.compilerRust})`);
+  logger.info(
+    `  - Post-install script will search tag name "${versions.RELEASE_TAG_NAME}"`,
   );
 
   logger.info("This log is to remind you to bump the version if needed.");
@@ -243,7 +234,7 @@ async function main() {
       return;
     }
     logger.info(`Clean up dist dir (${dirPath})...`);
-    rmdirSync(dirPath, { recursive: true });
+    rmSync(dirPath, { recursive: true });
   });
   logger.info("Dist dirs cleaned up.");
 

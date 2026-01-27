@@ -1,6 +1,6 @@
 [package]
 name = "nexp-compiler-rs"
-version = "0.1.5"
+version = "0.1.7"
 edition = "2024"
 
 [dependencies]
@@ -8,11 +8,16 @@ log = "0.4"
 env_logger = "0.11"
 anyhow = "1"
 walkdir = "2"
-serde = { version = "1", features = ["derive"] }
 pathdiff = "0.2.3"
-clap = { version = "4", features = ["derive"] }
-
 swc_common = "14"
 swc_ecma_parser = "22"
 swc_ecma_ast = "14"
 swc_ecma_visit = "14"
+
+[dependencies.serde]
+version = "1"
+features = [ "derive" ]
+
+[dependencies.clap]
+version = "4"
+features = [ "derive" ]
